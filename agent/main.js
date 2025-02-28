@@ -1,5 +1,3 @@
-// --- main.js (Main Process) ---
-
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
 const path = require('node:path');
 const fs = require('node:fs/promises');
@@ -10,18 +8,14 @@ const pdf = require('pdf-parse');
 const mammoth = require("mammoth");
 require('dotenv').config();
 
-// --- Configuration ---
-const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY; // !!! REPLACE !!!
+const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY; 
 
-// --- Gemini AI Setup ---
 const genAI = new GoogleGenerativeAI(GOOGLE_API_KEY);
 
-// --- Function to list available models (keep this) ---
 async function listAvailableModels() {
     try {
         for await (const m of genAI.listModels()) {
-            console.log(m);  // Log to the main process console
-            // Send to renderer process (if window is available)
+            console.log(m);  
             if (mainWindow) {
                 mainWindow.webContents.send('model-list', m);
             }
@@ -34,10 +28,8 @@ async function listAvailableModels() {
 let textModel;
 let visionModel;
 
-// --- Monitored Directories (Start with user's Downloads) ---
 let MONITORED_DIRECTORIES = [`${os.homedir()}/Downloads`];
 
-// --- Supported File Types and Prompts ---
 const FILE_PROMPTS = {
     ".txt": "Summarize this text document and assign an importance score (1-10).",
     ".pdf": "Analyze this PDF document and provide a summary with importance (1-10).",
@@ -47,14 +39,12 @@ const FILE_PROMPTS = {
     ".png": "Describe this image, assess its relevance, and provide an importance score (1-10).",
 };
 
-// --- File Analysis Function ---
 async function analyzeFileContent(filePath) {
     try {
         const fileExtension = path.extname(filePath).toLowerCase();
         if (!FILE_PROMPTS[fileExtension]) return "Unsupported file type.";
 
         if ([".txt", ".pdf", ".docx"].includes(fileExtension)) {
-            // Text file handling
             try {
                 let fileContent = "";
                 if (fileExtension === ".txt") {
@@ -79,9 +69,8 @@ async function analyzeFileContent(filePath) {
                 return `Error reading file: ${error.message}`;
             }
         } else if ([".jpg", ".jpeg", ".png"].includes(fileExtension)) {
-            // Image processing
             try {
-                const { default: imageType } = await import('image-type'); // Dynamic import
+                const { default: imageType } = await import('image-type'); 
                 const imageData = await fs.readFile(filePath);
                 const imgType = await imageType(imageData);
                 if (!imgType) return "Unsupported image format.";
@@ -102,7 +91,6 @@ async function analyzeFileContent(filePath) {
     }
 }
 
-// --- File Monitoring ---
 let watcher;
 function startMonitoring() {
   if (!GOOGLE_API_KEY || GOOGLE_API_KEY === "YOUR_GEMINI_API_KEY") {
@@ -113,14 +101,14 @@ function startMonitoring() {
     return;
   }
     if (watcher) {
-        watcher.close(); // Stop previous watcher
+        watcher.close(); 
     }
 
     watcher = chokidar.watch(MONITORED_DIRECTORIES, {
         ignored: /(^|[\/\\])\../,
         persistent: true,
         ignoreInitial: true,
-        usePolling: true, // Consider removing if permissions are not an issue
+        usePolling: true, 
         interval: 1000,
     });
 
@@ -146,7 +134,6 @@ function startMonitoring() {
 
 }
 
-// --- File Event Handler (with Debouncing) ---
 let analysisTimeout = null;
 const DEBOUNCE_DELAY = 2000; // 2 seconds
 async function handleFileEvent(filePath, eventType) {
@@ -166,7 +153,6 @@ async function handleFileEvent(filePath, eventType) {
     }, DEBOUNCE_DELAY);
 }
 
-// --- Electron App Setup ---
 
 let mainWindow;
 
@@ -177,20 +163,19 @@ function createWindow() {
         icon: path.join(__dirname, 'assets/icon.png'), 
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
-            nodeIntegration: false, // VERY IMPORTANT for security
-            contextIsolation: true,  // VERY IMPORTANT for security
+            nodeIntegration: false, //  security
+            contextIsolation: true,  //  security
         }
     });
     mainWindow.loadFile('index.html');
-    // mainWindow.webContents.openDevTools(); // Open DevTools (optional)
+    // mainWindow.webContents.openDevTools(); 
 }
 
 app.whenReady().then(() => {
     createWindow();
-    // List models and initialize on app start
     listAvailableModels().then(() => {
-      textModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }); // Replace with actual
-      visionModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });  // Replace with actual
+      textModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }); 
+      visionModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash" }); 
       startMonitoring();
     });
 
@@ -207,7 +192,7 @@ app.on('window-all-closed', () => {
         app.quit();
     }
     if (watcher) {
-        watcher.close();  // Important to stop the watcher when closing
+        watcher.close();  
     }
 });
 
@@ -227,12 +212,12 @@ ipcMain.handle('add-directory', async () => {
       const newDir = result.filePaths[0];
       if (!MONITORED_DIRECTORIES.includes(newDir)) {
         MONITORED_DIRECTORIES.push(newDir);
-        startMonitoring(); // Restart monitoring with the new directory
-        return newDir; // Return the newly added directory
+        startMonitoring(); 
+        return newDir;
       }
-      return null; // Directory already being monitored or selection was canceled
+      return null; 
     }
-    return null;  // No directory selected
+    return null; 
   });
 
   //Remove directories

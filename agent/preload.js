@@ -1,5 +1,3 @@
-// --- preload.js (Preload Script) ---
-
 const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('electronAPI', {

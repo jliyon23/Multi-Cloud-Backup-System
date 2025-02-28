@@ -1,5 +1,3 @@
-// --- renderer.js (Renderer Process) ---
-
 const logElement = document.getElementById('log');
 const analysisResultsElement = document.getElementById('analysisResults');
 const directoriesListElement = document.getElementById('directoriesList');
