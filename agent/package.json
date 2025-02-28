@@ -1,26 +1,25 @@
 {
-  "name": "agent",
-  "version": "1.0.0",
-  "main": "main.js",
-  "type": "module",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "electron ."
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "description": "",
-  "dependencies": {
-    "@google/generative-ai": "^0.22.0",
-    "axios": "^1.8.1",
-    "chokidar": "^4.0.3",
-    "dotenv": "^16.4.7",
-    "electron": "^34.3.0",
-    "googleapis": "^144.0.0",
-    "image-type": "^5.2.0",
-    "mammoth": "^1.9.0",
-    "mime-types": "^2.1.35",
-    "pdf-parse": "^1.1.1"
-  }
+    "name": "electron-file-monitor",
+    "version": "1.0.0",
+    "description": "File monitor with Gemini AI",
+    "main": "main.js",
+    "scripts": {
+        "start": "electron .",
+        "dev": "electronmon ."
+    },
+    "keywords": [],
+    "author": "",
+    "license": "ISC",
+    "devDependencies": {
+        "electron": "^28.1.0",
+        "electronmon": "^2.0.3"
+    },
+    "dependencies": {
+        "@google/generative-ai": "^0.2.1",
+        "chokidar": "^3.5.3",
+        "image-type": "^5.2.0",
+        "mammoth": "^1.6.0",
+        "nodemon": "^3.1.9",
+        "pdf-parse": "^1.1.1"
+    }
 }
