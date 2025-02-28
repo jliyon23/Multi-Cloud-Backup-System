@@ -8,9 +8,10 @@ const chokidar = require('chokidar');
 const os = require('node:os');
 const pdf = require('pdf-parse');
 const mammoth = require("mammoth");
+require('dotenv').config();
 
 // --- Configuration ---
-const GOOGLE_API_KEY = "AIzaSyD1452xjuZaVWmkBnW8ac3eGy4pzSHfE_s"; // !!! REPLACE !!!
+const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY; // !!! REPLACE !!!
 
 // --- Gemini AI Setup ---
 const genAI = new GoogleGenerativeAI(GOOGLE_API_KEY);
