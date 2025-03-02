@@ -1,3 +1,5 @@
+// --- preload.js (Preload Script) ---
+
 const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('electronAPI', {
@@ -6,6 +8,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
     removeDirectory: (dir) => ipcRenderer.invoke('remove-directory', dir),
     onLogMessage: (callback) => ipcRenderer.on('log-message', (_event, message, isError) => callback(message, isError)),
     onAnalysisResult: (callback) => ipcRenderer.on('analysis-result', (_event, data) => callback(data)),
-    onModelList: (callback) => ipcRenderer.on('model-list', (_event, model) => callback(model)),
-
+    onFileUploaded: (callback) => ipcRenderer.on('file-uploaded', (_event, data) => callback(data)), // Add this
 });
