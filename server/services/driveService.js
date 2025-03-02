@@ -2,17 +2,16 @@
 const { google } = require('googleapis');
 const fs = require('node:fs'); // Use the synchronous version for createReadStream
 const path = require('path');
-const config = require('../config/config');
+const config = require('../config/config'); // Import the configuration
 
-
-const credentials = config.google.credentials; // Use fs (sync)
+// Use the credentials from the config object *directly*.
 const auth = new google.auth.GoogleAuth({
-    credentials,
+    credentials: config.google.credentials, // Use the config!
     scopes: config.google.scopes,
 });
 const driveService = google.drive({ version: 'v3', auth });
 
-let folderIdPromise = null;
+let folderIdPromise = null; // Cache the promise, not just the ID
 
 async function getOrCreateUploadFolder() {
     // Only run the folder creation/check once, and reuse result
@@ -33,9 +32,9 @@ async function getOrCreateUploadFolder() {
             fields: 'id',
           }).then(createResponse => createResponse.data.id);
         }
-      }).catch(error => {
+      }).catch(error => { //Corrected catch
         console.error('Error getting or creating folder:', error);
-        throw error;
+        throw error; //rethrow
       });
     }
 
@@ -60,11 +59,11 @@ async function uploadFileToDrive(filePath, fileName) {
             fields: 'id, name, webViewLink, webContentLink',
         });
         console.log('File uploaded to Google Drive:', response.data);
-		return response.data;
+        return response.data;
 
     } catch (error) {
         console.error('Error uploading to Google Drive:', error);
-        throw error; // Re-throw to be handled by the caller
+        throw error;
     }
 }
 
@@ -72,7 +71,7 @@ async function shareFile(fileId, userEmail) {
     try {
       const permission = {
         type: 'user',
-        role: 'reader',
+        role: 'writer',
         emailAddress: userEmail,
       };
       await driveService.permissions.create({
@@ -83,15 +82,15 @@ async function shareFile(fileId, userEmail) {
       console.log(`File ${fileId} shared with ${userEmail}`);
     } catch (error) {
       console.error('Error sharing file:', error);
-      throw error; // Important to re-throw so caller knows it failed
+      throw error;
     }
 }
 
 async function listFiles() {
     try {
       const response = await driveService.files.list({
-        pageSize: 10, // Or however many you want to list
-        fields: 'nextPageToken, files(id, name, webViewLink, webContentLink)', // Include webContentLink
+        pageSize: 10,
+        fields: 'nextPageToken, files(id, name, webViewLink, webContentLink)',
       });
       return response.data.files;
     } catch (error) {
@@ -99,10 +98,20 @@ async function listFiles() {
       throw error;
     }
   }
+  async function deleteFileFromDrive(fileId) { //Added delete function
+    try {
+        await driveService.files.delete({ fileId });
+        console.log(`File ${fileId} deleted from Drive.`);
+    } catch (error) {
+        console.error(`Error deleting file ${fileId}:`, error);
+        throw error;
+    }
+}
 
 module.exports = {
     uploadFileToDrive,
     shareFile,
 	listFiles,
-    getOrCreateUploadFolder
+    getOrCreateUploadFolder,
+    deleteFileFromDrive // Export the delete function
 };
