@@ -4,8 +4,8 @@ const fs = require('node:fs'); // Use the synchronous version for createReadStre
 const path = require('path');
 const config = require('../config/config');
 
-const credentialsPath = path.resolve(__dirname, '..', config.google.credentialsPath); // Resolve path
-const credentials = JSON.parse(fs.readFileSync(credentialsPath)); // Use fs (sync)
+
+const credentials = config.google.credentials; // Use fs (sync)
 const auth = new google.auth.GoogleAuth({
     credentials,
     scopes: config.google.scopes,
