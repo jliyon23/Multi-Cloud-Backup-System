@@ -1,24 +1,35 @@
 const express = require('express');
-const path = require('path');
-const fs = require('node:fs/promises');
-const fsSync = require('node:fs'); //For createReadStream
+const path = require('path'); // Not actually used in this code, consider removing
+const fs = require('node:fs/promises'); // Not actually used in this code, consider removing
+const fsSync = require('node:fs'); // Not actually used in this code, consider removing
 const app = express();
-const port = 5000;
+ // Use process.env.PORT for deployment
 const cors = require('cors');
-const multer = require('multer');
+const multer = require('multer'); // Not used in this snippet, consider removing if not needed elsewhere
 require('dotenv').config();
-const config = require('./config/config'); // Import config
+const config = require('./config/config'); // Import config (check if still needed)
 const uploadRoutes = require('./routes/uploads');
 const driveService = require('./services/driveService');
 const sequelize = require("./config/database_pg");
 const User = require("./models/User");
 const authRoutes = require('./routes/authRoutes');
 
+const port = process.env.PORT || 5000;
+
 // --- Middleware ---
+//  Restrictive CORS Configuration (replace with your actual domain(s) in production)
+const allowedOrigins = ['http://localhost:5173', 'https://your-production-domain.com'];  //example
 app.use(cors({
-    origin: true, // Adjust in production
-    credentials: true
+    origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) { // Allow requests with no origin (like mobile apps)
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true  // Only if you are using cookies
 }));
+
 app.use(express.json());
 
 // --- Routes ---
@@ -37,7 +48,7 @@ app.get('/list-drive-files', async (req, res) => {
         }
     } catch (error) {
         console.error('Error listing files:', error);
-        res.status(500).json({ message: 'Error listing files', error: error.message });
+        res.status(500).json({ message: 'Error listing files', error: 'Failed to list files' }); // Generic error
     }
 });
 
@@ -51,10 +62,10 @@ app.delete('/delete/:fileId', async (req, res) => {
 
     try {
         await driveService.deleteFileFromDrive(fileId);
-        res.status(200).json({ message: `File ${fileId} deleted successfully.` });
+        res.status(200).json({ message: `File ${fileId} deleted successfully.` });  // Template literals need backticks
     } catch (error) {
         console.error(`Error deleting file ${fileId}:`, error);
-        res.status(500).json({ message: `Error deleting file: ${error.message}` });
+        res.status(500).json({ message: 'Error deleting file' }); // Generic error
     }
 });
 
@@ -73,9 +84,9 @@ driveService.getOrCreateUploadFolder()
     });
 
 
-sequelize.sync({ force: false }) // Change to `true` only to reset tables
+sequelize.sync({ force: false }) // Change to true only to reset tables
     .then(() => {
         console.log("PostgreSQL Database Connected ✅");
-        app.listen(3000, () => console.log(`Server listening at http://localhost:${config.port}`));
+        app.listen(port, () => console.log(`Server listening at http://localhost:${port}`)); // Use dynamic port
     })
     .catch((err) => console.error("Database Connection Error ❌", err));

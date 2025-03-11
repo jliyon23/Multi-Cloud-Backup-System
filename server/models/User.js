@@ -8,8 +8,8 @@ const User = sequelize.define("user", {
   password: { type: DataTypes.STRING, allowNull: false },
   verified: { type: DataTypes.BOOLEAN, defaultValue: false },
   verificationcode: { type: DataTypes.STRING, allowNull: true }, // Stores the 6-digit code
-},{
-    timestamps: true
+}, {
+  timestamps: true
 });
 
 module.exports = User;

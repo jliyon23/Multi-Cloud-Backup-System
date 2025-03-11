@@ -7,15 +7,25 @@ const router = express.Router();
 router.post(
   "/signup",
   [
-    body("name").notEmpty().withMessage("Name is required"),
-    body("email").isEmail().withMessage("Invalid email"),
-    body("password").isLength({ min: 6 }).withMessage("Password must be at least 6 characters"),
+    body("name").trim().notEmpty().escape().withMessage("Name is required"), // Added trim and escape
+    body("email").isEmail().normalizeEmail().withMessage("Invalid email"), // Added normalizeEmail
+    body("password").isLength({ min: 8 }).withMessage("Password must be at least 8 characters"), // Increased min length
   ],
   signup
 );
 
-router.post("/verify-email", [body("email").isEmail(), body("code").isLength({ min: 6, max: 6 })], verifyEmail);
+router.post(
+  "/verify-email",
+  [
+    body("email").isEmail().normalizeEmail(), // Added normalizeEmail
+    body("code").isLength({ min: 6, max: 6 }).withMessage("Invalid verification code"), // Added message
+  ],
+  verifyEmail
+);
 
-router.post("/login", login);
+router.post("/login", [
+    body("email").isEmail().normalizeEmail(), // Added normalizeEmail
+    body("password").notEmpty().withMessage("Password is required")
+], login);
 
 module.exports = router;

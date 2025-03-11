@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const Signup = () => {
   const [formData, setFormData] = useState({
@@ -12,6 +13,15 @@ const Signup = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const token = localStorage.getItem("authToken");
+    if (token) {
+      // You might want to validate the token on the server before redirecting.
+      navigate("/");
+    }
+  }, [navigate]);
 
   // Handle input change
   const handleChange = (e) => {
@@ -31,16 +41,21 @@ const Signup = () => {
 
     setLoading(true);
     try {
-      const response = await axios.post("http://localhost:5000/signup", {
+      const response = await axios.post("http://localhost:3000/api/signup", {
         name: formData.fullName,
         email: formData.email,
         password: formData.password,
       });
 
+      localStorage.setItem("email", formData.email);
+
       setSuccess(response.data.message); // Show success message
       setFormData({ fullName: "", email: "", password: "", confirmPassword: "" }); // Reset form
+
+      navigate("/verify");
     } catch (err) {
-      setError(err.response?.data?.message || "Something went wrong!");
+      setError(err.response?.data?.error || "Something went wrong!");
+      console.error("Signup error:", err); // Log the full error
     } finally {
       setLoading(false);
     }
